@@ -1,0 +1,20 @@
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Node
+node_modules/
+frontend/node_modules/
+
+# Build artifacts
+dist/
+frontend/dist/
+
+# Local database and outputs
+db/*.db
+backend/excel_output/

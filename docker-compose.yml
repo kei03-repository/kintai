@@ -1,0 +1,50 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: kintai-db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-kintai}
+      POSTGRES_USER: ${POSTGRES_USER:-kintai}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-kintai}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-kintai} -d ${POSTGRES_DB:-kintai}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    image: kintai/backend:${IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: kintai-backend
+    environment:
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-kintai}:${POSTGRES_PASSWORD:-kintai}@db:5432/${POSTGRES_DB:-kintai}
+      TEMPLATE_SOURCE: ${TEMPLATE_SOURCE:-/app/業務進捗報告_島.xlsx}
+      AWS_REGION: ${AWS_REGION:-ap-northeast-1}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN:-}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+
+  frontend:
+    image: kintai/frontend:${IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: kintai-frontend
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+
+volumes:
+  postgres_data:

@@ -1,0 +1,166 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f5f7fb;
+  color: #1a1a1a;
+}
+
+.app-shell {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.app-header {
+  margin-bottom: 18px;
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+  align-items: center;
+}
+
+.controls label {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  background: #2f6ce5;
+  color: white;
+  cursor: pointer;
+  width: 100%;
+  min-width: 120px;
+}
+
+button:hover {
+  background: #1d54c4;
+}
+
+@media (max-width: 640px) {
+  .app-shell {
+    padding: 14px;
+  }
+
+  .controls,
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .form-row {
+    display: grid;
+  }
+
+  label {
+    min-width: auto;
+  }
+
+  table,
+  thead,
+  tbody,
+  th,
+  td,
+  tr {
+    display: block;
+  }
+
+  thead {
+    display: none;
+  }
+
+  tr {
+    border: 1px solid #e3e8ef;
+    margin-bottom: 12px;
+    border-radius: 10px;
+    padding: 12px;
+  }
+
+  td {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+  }
+
+  td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    margin-right: 8px;
+  }
+}
+
+.form-section,
+.list-section {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.form-row.full-width {
+  flex-direction: column;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 180px;
+  font-size: 0.95rem;
+}
+
+input,
+textarea,
+select {
+  margin-top: 6px;
+  padding: 10px;
+  border: 1px solid #d3d7df;
+  border-radius: 8px;
+  font: inherit;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.time-input {
+  text-align: center;
+}
+
+textarea {
+  resize: vertical;
+}
+
+.message,
+.form-status {
+  margin-top: 12px;
+  color: #2f6ce5;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #e3e8ef;
+  text-align: left;
+}
+
+th {
+  background: #f0f4fb;
+}
