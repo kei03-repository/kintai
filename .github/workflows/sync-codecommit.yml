@@ -1,0 +1,93 @@
+name: Sync CodeCommit Mirror
+
+on:
+  push:
+    branches:
+      - 'main'
+      - 'develop'
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - '.github/workflows/sync-codecommit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: codecommit-mirror-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  CODECOMMIT_REPOSITORY: ${{ vars.CODECOMMIT_REPOSITORY }}
+
+jobs:
+  validate:
+    if: github.repository_owner != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify monorepo layout
+        run: |
+          test -d backend
+          test -d frontend
+
+      - name: Trivy scan backend source
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: backend
+          scanners: vuln,secret,config
+          format: table
+          exit-code: '1'
+          severity: CRITICAL,HIGH
+
+      - name: Trivy scan frontend source
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: frontend
+          scanners: vuln,secret,config
+          format: table
+          exit-code: '1'
+          severity: CRITICAL,HIGH
+
+  mirror:
+    needs:
+      - validate
+    if: github.repository_owner != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate required configuration
+        run: |
+          test -n "${AWS_REGION}"
+          test -n "${CODECOMMIT_REPOSITORY}"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_GITHUB_ACTIONS_ROLE_ARN }}
+          role-session-name: github-codecommit-sync
+
+      - name: Clone GitHub repository
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git clone "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" repo
+
+      - name: Push to CodeCommit
+        working-directory: repo
+        run: |
+          git config credential.helper '!aws codecommit credential-helper $@'
+          git config credential.UseHttpPath true
+          git remote add codecommit "https://git-codecommit.${AWS_REGION}.amazonaws.com/v1/repos/${CODECOMMIT_REPOSITORY}"
+          for branch in main develop; do
+            if git show-ref --verify --quiet "refs/heads/${branch}"; then
+              git push codecommit "refs/heads/${branch}:refs/heads/${branch}" --force
+            fi
+          done
