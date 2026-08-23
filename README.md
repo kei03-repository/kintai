@@ -64,6 +64,51 @@ Windows 環境では次のコマンドで起動します（`npm` が PATH に無
 2. 月一覧が表示される
 3. `Excel 出力` ボタンでバックエンドが `excel_output` にコピー済みファイルを作成し、ダウンロードする
 
+## 環境変数一覧
+
+### アプリ実行用（`.env` / Docker Compose）
+
+- `POSTGRES_DB`: PostgreSQL のデータベース名
+- `POSTGRES_USER`: PostgreSQL のユーザー名
+- `POSTGRES_PASSWORD`: PostgreSQL のパスワード
+- `IMAGE_TAG`: Docker Compose で使用するイメージタグ
+- `TEMPLATE_SOURCE`: Excel テンプレートの取得元。ローカルパスまたは `s3://...` / `arn:aws:s3:::...`
+- `AWS_REGION`: S3 テンプレート参照時のAWSリージョン
+- `AWS_ACCESS_KEY_ID`: ローカル実行時にIAMロールが無い場合の任意設定
+- `AWS_SECRET_ACCESS_KEY`: ローカル実行時にIAMロールが無い場合の任意設定
+- `AWS_SESSION_TOKEN`: 一時クレデンシャル利用時のみ任意設定
+- `AWS_ACCOUNT_ID`: ECR push コマンド例で使用
+- `ECR_REPOSITORY_PREFIX`: ECR リポジトリ接頭辞
+- `DOCKERHUB_USERNAME`: DockerHub push 時のユーザー名
+- `DATABASE_URL`: バックエンドで明示的にDB接続先を指定したい場合のみ使用。未設定時は `db/attendance.db` の SQLite を使用
+- `TEMPLATE_CACHE_DIR`: S3 から取得したテンプレートのキャッシュ先。未設定時は `/tmp/template_cache`
+
+### GitHub Actions / CI 用
+
+- このアプリのCIワークフローでは追加の GitHub Variables / Secrets は使っていません。
+- Trivy イメージスキャンは workflow 内で直接実行されます。
+
+### Terraform CD / Infra 用 GitHub Variables
+
+- `AWS_REGION`
+- `TFSTATE_BUCKET_DEV`
+- `TFSTATE_DYNAMODB_TABLE_DEV`
+- `TFSTATE_BUCKET_PRD`
+- `TFSTATE_DYNAMODB_TABLE_PRD`
+- `APP_REPOSITORY`: 例 `kei03-repository/kintai`
+- `SONAR_PROJECT_KEY`: SonarQube 有効化時に使用
+- `SONAR_PROJECT_NAME`: SonarQube 有効化時に使用
+- `SONAR_HOST_URL_ECS`: ECS 上で動かす SonarQube のURL
+
+### Terraform CD / Infra 用 GitHub Secrets
+
+- `AWS_ROLE_ARN_DEV`
+- `AWS_ROLE_ARN_PRD`
+- `APP_REPO_READ_TOKEN`
+- `SONAR_TOKEN`: SonarQube 有効化時に使用
+
+詳細は [infra/docs/terraform-cd-required-settings.md](../../infra/docs/terraform-cd-required-settings.md) を参照してください。
+
 ## Docker 3コンテナ構成（frontend / backend / db）
 
 このリポジトリには以下の Docker ファイルを追加済みです。

@@ -10,6 +10,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend/app ./app
 RUN mkdir -p ./excel_output ./db
+RUN addgroup --system app && adduser --system --ingroup app app
+RUN chown -R app:app /app
+
+USER app
 
 EXPOSE 8000
 
